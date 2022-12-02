@@ -4,27 +4,27 @@ namespace AdventOfCode2022
 {
     public class Day1 : Day
     {
-        List<long> maxCallories = new List<long>();
+        List<long> calloriesPerElf = new List<long>();
 
         public long Part1(string[] lines)
         {
             CalculateCallories(lines);
 
-            return maxCallories.Max();
+            return calloriesPerElf.Max();
         }
 
         public long Part2(string[] lines)
         {
             CalculateCallories(lines);
 
-            long sumOfTopThree = maxCallories.OrderByDescending(x => x).Take(3).Sum();
+            long sumOfTopThree = calloriesPerElf.OrderByDescending(x => x).Take(3).Sum();
 
             return sumOfTopThree;
         }
 
         private void CalculateCallories(string[] lines)
         {
-            maxCallories.Clear();
+            calloriesPerElf.Clear();
             
             long sumOfcallories = 0;
 
@@ -32,7 +32,7 @@ namespace AdventOfCode2022
             {
                 if (line == "")
                 {
-                    maxCallories.Add(sumOfcallories);
+                    calloriesPerElf.Add(sumOfcallories);
                     sumOfcallories = 0;
                 }
                 else
