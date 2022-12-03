@@ -13,6 +13,10 @@ namespace AdventOfCode2022
 
         Dictionary<string, int> results = new Dictionary<string, int>()
         {
+            {"C Y", 0},
+            {"A Z", 0},
+            {"B X", 0},
+
             {"A X", 3},
             {"B Y", 3},
             {"C Z", 3},
@@ -20,10 +24,6 @@ namespace AdventOfCode2022
             {"A Y", 6},
             {"B Z", 6},
             {"C X", 6},
-
-            {"C Y", 0},
-            {"A Z", 0},
-            {"B X", 0},
         };
 
         public long Part1(string[] lines)
@@ -49,7 +49,7 @@ namespace AdventOfCode2022
                 sumOfScore += points[result.Key[2].ToString()];
                 sumOfScore += valueOfResult;
             }
-            
+
             return sumOfScore;
         }
     }
