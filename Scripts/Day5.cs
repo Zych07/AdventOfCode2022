@@ -10,21 +10,21 @@ namespace AdventOfCode2022
 
         public long Part1(string[] lines)
         {
-            InitInput(lines);
+            DoRearrangement(lines);
 
             PrintResult();
             return 0;
         }
         public long Part2(string[] lines)
         {
-            InitInput(lines, true);
+            DoRearrangement(lines, true);
 
             PrintResult();
             return 0;
         }
 
 
-        private void InitInput(string[] lines, bool crateMover9001 = false)
+        private void DoRearrangement(string[] lines, bool crateMover9001 = false)
         {
             for (int i = 0; i < NUM_OF_STACK; i++)
                 stacks[i] = new LinkedList<char>();
@@ -63,25 +63,27 @@ namespace AdventOfCode2022
             int fromStack = int.Parse(moveCreateInfo[3]) - 1;
             int toStack = int.Parse(moveCreateInfo[5]) - 1;
 
-            string tmp = "";
+            string movingCreates = "";
 
             for (int i = 0; i < howManyCreates; i++)
             {
                 var create = stacks[fromStack].Last;
                 stacks[fromStack].RemoveLast();
+                movingCreates += create.Value;
 
-                if (!crateMover9001)
-                {
-                    stacks[toStack].AddLast(create.Value);
-                    continue;
-                }
-
-                tmp = create.Value + tmp;
                 if (i == howManyCreates - 1)
-                    foreach (var t in tmp)
-                        stacks[toStack].AddLast(t);
+                {
+                    if (crateMover9001)
+                        movingCreates = Revert(movingCreates);
+
+                    foreach (var _create in movingCreates)
+                        stacks[toStack].AddLast(_create);
+                }
             }
         }
+
+        private string Revert(string movingCreates) => new string(movingCreates.ToCharArray().Reverse().ToArray());
+
         private void PrintResult()
         {
             string result = "";
