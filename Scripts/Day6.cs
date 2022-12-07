@@ -18,7 +18,7 @@ namespace AdventOfCode2022
 
         private int ProccesPacket(string[] lines, int sequenceLength)
         {
-            Queue<char> lastFourCharacters = new Queue<char>();
+            Queue<char> charactersSqeuence = new Queue<char>();
 
             int charactersProcessed = 0;
 
@@ -26,17 +26,17 @@ namespace AdventOfCode2022
             {
                 foreach (char character in line)
                 {
-                    if (lastFourCharacters.Count == sequenceLength)
+                    if (charactersSqeuence.Count == sequenceLength)
                     {
-                        bool anyDuplicate = lastFourCharacters.GroupBy(x => x).Any(y => y.Count() > 1);
+                        bool anyDuplicate = charactersSqeuence.GroupBy(x => x).Any(y => y.Count() > 1);
 
                         if (!anyDuplicate)
                             return charactersProcessed;
 
-                        lastFourCharacters.Dequeue();
+                        charactersSqeuence.Dequeue();
                     }
 
-                    lastFourCharacters.Enqueue(character);
+                    charactersSqeuence.Enqueue(character);
                     charactersProcessed++;
                 }
             }
