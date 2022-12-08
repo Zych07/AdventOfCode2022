@@ -10,7 +10,7 @@ namespace AdventOfCode2022
         {
             Dic root = ParseInput(lines);
 
-            return GetSizeDictionary(root);
+            return GetSumDictionaries(root);
         }
 
         public long Part2(string[] lines)
@@ -23,26 +23,26 @@ namespace AdventOfCode2022
             return GetMinSize(root, minFileToDelete);
         }
 
-        private long GetSizeDictionary(Dic root, long limit = 100000)
+        private long GetSumDictionaries(Dic root, long limitSize = 100000)
         {
             long size = 0;
 
             foreach (var child in root.Children)
-                size += GetSizeDictionary(child, limit);
+                size += GetSumDictionaries(child, limitSize);
 
-            size += (root.TotalSize <= limit ? root.TotalSize : 0);
+            size += (root.TotalSize <= limitSize ? root.TotalSize : 0);
 
             return size;
         }
 
-        private long GetMinSize(Dic root, long limit)
+        private long GetMinSize(Dic root, long minFileSize)
         {
             long minSize = long.MaxValue;
 
             foreach (var child in root.Children)
-                minSize = Math.Min(GetMinSize(child, limit), minSize);
+                minSize = Math.Min(GetMinSize(child, minFileSize), minSize);
 
-            if (root.TotalSize >= limit)
+            if (root.TotalSize >= minFileSize)
                 minSize = Math.Min(root.TotalSize, minSize);
 
             return minSize;
