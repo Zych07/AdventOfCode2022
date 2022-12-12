@@ -3,37 +3,55 @@ namespace AdventOfCode2022
 {
     public class Day11 : Day
     {
-        
-        const int MAX_ROUND = 20;
+
+        private static Dictionary<int, int> _primeNumbers = new Dictionary<int, int>();
+
         private static List<Monkey> _monkeys = new List<Monkey>();
         public long Part1(string[] lines)
         {
             ParseInput(lines);
 
+            int MAX_ROUND = 20;
+
             for (int i = 0; i < MAX_ROUND; i++)
-            {
                 foreach (var monkey in _monkeys)
-                    monkey.MakeTurn();
-            }
+                    monkey.MakeTurnInt();
 
-            foreach (var monkey in _monkeys)
-                Console.WriteLine("Monkey " + monkey.ID + " inspected items " + monkey.InspectedItem + " times.");
-
-            var monekysWithMostInspectedItems = _monkeys.OrderByDescending(x => x.InspectedItem).Select(x => x.InspectedItem).Take(2);
-
-            return (long)monekysWithMostInspectedItems.Aggregate((x, y) => x * y);
+            return (long)_monkeys.OrderByDescending(x => x.InspectedItem).Select(x => x.InspectedItem).Take(2).Aggregate((x, y) => x * y);
         }
 
         public long Part2(string[] lines)
         {
-            return -1;
+            ParseInput(lines);
+
+            int MAX_ROUND = 10000;
+
+            for (int i = 0; i < MAX_ROUND; i++)
+                foreach (var monkey in _monkeys)
+                    monkey.MakeTurn();
+
+            return (long)_monkeys.OrderByDescending(x => x.InspectedItem).Select(x => x.InspectedItem).Take(2).Aggregate((x, y) => x * y);
         }
 
         private void ParseInput(string[] lines)
         {
+            _primeNumbers.Clear();
             _monkeys.Clear();
 
             Monkey? currentMonkey = null;
+
+            int primeID = 0;
+
+            foreach (var line in lines)
+            {
+                if (line.IndexOf("divisible by ") > 0)
+                {
+                    var primeNumber = line.Substring(line.IndexOf("divisible by ") + "divisible by ".Length);
+                    _primeNumbers.Add(primeID, int.Parse(primeNumber));
+                    primeID++;
+                }
+
+            }
 
             foreach (var line in lines)
             {
@@ -58,7 +76,8 @@ namespace AdventOfCode2022
                     {
                         if (item == string.Empty)
                             continue;
-                        currentMonkey.items.Enqueue(UInt64.Parse(item));
+                        currentMonkey.items.Enqueue(new Item(int.Parse(item)));
+                        currentMonkey.itemsInt.Enqueue(int.Parse(item));
                     }
                 }
             }
@@ -67,7 +86,8 @@ namespace AdventOfCode2022
         private class Monkey
         {
             public int ID;
-            public Queue<UInt64> items = new Queue<UInt64>();
+            public Queue<Item> items = new Queue<Item>();
+            public Queue<int> itemsInt = new Queue<int>();
 
             public int Divisible;
             public int PassToMonekyWhenTrue;
@@ -85,13 +105,11 @@ namespace AdventOfCode2022
                 {
                     InspectedItem++;
 
-                    UInt64 worryLevel = item;
+                    Item worryLevel = item;
                     worryLevel = Operation(worryLevel);
 
-                    worryLevel /= 3;
-
                     int monekyToPassItem = PassToMonekyWhenFalse;
-                    if (worryLevel % (UInt64)Divisible == 0)
+                    if (worryLevel.rest[_primeNumbers.First(x => x.Value == Divisible).Key] == 0)
                         monekyToPassItem = PassToMonekyWhenTrue;
 
                     _monkeys.First(x => x.ID == monekyToPassItem).items.Enqueue(worryLevel);
@@ -99,9 +117,46 @@ namespace AdventOfCode2022
                 items.Clear();
             }
 
-            private UInt64 Operation(UInt64 worryLevel)
+            public void MakeTurnInt()
             {
-                UInt64[] factors = new UInt64[2];
+                foreach (var item in itemsInt)
+                {
+                    InspectedItem++;
+
+                    int worryLevel = item;
+                    worryLevel = Operation(worryLevel);
+
+                    worryLevel /= 3;
+
+                    int monekyToPassItem = PassToMonekyWhenFalse;
+                    if (worryLevel % Divisible == 0)
+                        monekyToPassItem = PassToMonekyWhenTrue;
+
+                    _monkeys.First(x => x.ID == monekyToPassItem).itemsInt.Enqueue(worryLevel);
+                }
+                itemsInt.Clear();
+            }
+
+            private Item Operation(Item worryLevel)
+            {
+                Item[] factors = new Item[2];
+                var splitedEquation = Calculactions.Split(' ');
+                SetFactors(worryLevel, factors, splitedEquation);
+
+                switch (splitedEquation[1])
+                {
+                    case "+":
+                        return new Item(factors[0].Add(factors[1]));
+                    case "*":
+                        return new Item(factors[0].Multiply(factors[1]));
+                    default:
+                        throw new Exception();
+                }
+            }
+
+            private int Operation(int worryLevel)
+            {
+                int[] factors = new int[2];
                 var splitedEquation = Calculactions.Split(' ');
                 SetFactors(worryLevel, factors, splitedEquation);
 
@@ -116,19 +171,69 @@ namespace AdventOfCode2022
                 }
             }
 
-            private static void SetFactors(UInt64 worryLevel, UInt64[] factors, string[] splitedEquation)
+            private void SetFactors(Item worryLevel, Item[] factors, string[] splitedEquation)
             {
                 for (int i = 0; i < 2; i++)
                 {
-                    UInt64 factor;
+                    Item factor;
+
+                    if (splitedEquation[i * 2] == "old")
+                        factor = new Item(worryLevel);
+                    else
+                        factor = new Item(int.Parse(splitedEquation[i * 2]));
+
+                    factors[i] = factor;
+                }
+            }
+            private void SetFactors(int worryLevel, int[] factors, string[] splitedEquation)
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    int factor;
 
                     if (splitedEquation[i * 2] == "old")
                         factor = worryLevel;
                     else
-                        factor = UInt64.Parse(splitedEquation[i * 2]);
+                        factor = int.Parse(splitedEquation[i * 2]);
 
                     factors[i] = factor;
                 }
+            }
+        }
+
+        private class Item
+        {
+            public int[] rest = new int[_primeNumbers.Count];
+
+
+            public Item(int itemValue)
+            {
+                for (int i = 0; i < rest.Length; i++)
+                    rest[i] = itemValue % _primeNumbers[i];
+            }
+            public Item(Item item)
+            {
+                for (int i = 0; i < rest.Length; i++)
+                    rest[i] = item.rest[i];
+            }
+
+            public Item Add(Item value)
+            {
+                for (int i = 0; i < rest.Length; i++)
+                {
+                    rest[i] = (rest[i] + value.rest[i]) % _primeNumbers[i];
+                }
+                return this;
+
+            }
+            public Item Multiply(Item item)
+            {
+                for (int i = 0; i < rest.Length; i++)
+                {
+                    rest[i] = (rest[i] * item.rest[i]) % _primeNumbers[i];
+                }
+
+                return this;
             }
         }
     }
