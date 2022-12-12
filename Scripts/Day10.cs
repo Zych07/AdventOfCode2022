@@ -58,7 +58,7 @@ namespace AdventOfCode2022
             if (Math.Abs(_currentCycle % 40 - X) <= 1)
                 Console.Write("#");
             else
-                Console.Write(".");
+                Console.Write(" ");
         }
 
         private void ResetClock() => _currentCycle = 0;
